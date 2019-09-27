@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="br.com.ithappenssh.mapper.PedidoSolicitadoMapper">
+
+    <select id="listarPedidosSolicitados" parameterType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO"
+            resultType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO">
+        SELECT ES12_ID AS pedidoId, CD62_ID AS tipoMovimento, ES24_ID tipoPedido, ES12_ID_STATUS AS statusPedido,
+        ES12_DT_DIGITACAO as dataDigitacao,
+        ES12_VALOR_TOTAL as valorPedido, ES12_ID_CLIENTE as cliente, CD17_ID as formaPagamento
+        FROM ESTOQUE.DBO.ES12_PEDIDO WITH (NOLOCK)
+        INNER JOIN CADASTRO.DBO.CD18_CLIENTE WITH (NOLOCK) ON (ES12_ID_CLIENTE = CD18_ID)
+        INNER JOIN CADASTRO.DBO.CD62_ESTOQUE_MOVIMENTO (NOLOCK) ON (CD62_ID = ES12_TIPO_MOVIMENTO)
+        INNER JOIN ESTOQUE.DBO.ES24_TIPO_PEDIDO WITH (NOLOCK) ON (CD62_ID_TIPO_PEDIDO = ES24_ID)
+        LEFT JOIN CADASTRO.DBO.CD17_AGENTE_COBRADOR (NOLOCK) ON (CD17_ID = ES12_ID_AGENTE_COBRADOR)
+        LEFT JOIN VENDAS.DBO.VD25_CONTRIBUINTE_SEFAZ (NOLOCK) ON (VD25_CNPJ = CONVERT(NUMERIC, CD18_CIC_CGC))
+        LEFT JOIN ESTOQUE.DBO.ES19_LIBERACAO_PEDIDO (NOLOCK) ON (ES12_ID = ES19_ID_PEDIDO)
+        WHERE ES12_FILIAL = 81
+        AND ES12_ID_STATUS = 2
+        AND CD62_TIPO = 0
+        AND ES24_ID = 1
+        AND ES12_TIPO_MOVIMENTO = (82)
+        AND NOT EXISTS(SELECT
+        TOP 1
+        1
+        FROM LOG.DBO.LG04_SERVICO_AGENDA WITH (NOLOCK)
+        LEFT JOIN FINANCEIRO.DBO.FN00_PRE_LANCAMENTO_FINANCEIRO WITH (NOLOCK)
+        ON FN00_ID_PEDIDO = LG04_ID_ORIGEM AND LG04_ID_SERVICO = 90
+        LEFT JOIN FINANCEIRO.DBO.FN01_LANCAMENTO_CONTAS_RECEBER WITH (NOLOCK)
+        ON FN01_SEQU = FN00_SEQU_TITULO
+        WHERE LG04_ID_ORIGEM = ES12_ID
+        AND ((FN00_SEQU IS NULL OR FN01_SEQU IS NULL) OR
+        (FN01_ID_AGENTE_COBRADOR = 612 AND FN01_ID_TIPO_COBRANCA = 1997 AND FN01_STATUS
+        <>
+        99 AND
+        FN01_VALOR_DEVEDOR > 0)))
+        ORDER BY ES12_DT_DIGITACAO
+    </select>
+
+    <select id="buscarPedidosProcessadosMapper" resultType="br.com.ithappenssh.model.SolicitacaoPedido">
+        SELECT * from solicitacaopedido WHERE solicitacaopedido.pedido = #{id}
+    </select>
+
+    <!--Salvar Pedido na tabela de liberação | tabela [ES19_LIBERACAO_PEDIDO]-->
+    <insert id="salvarLiberacaoPedidoMapper"></insert>
+
+    <!--Salvar Pedido na tabela de log do JOB | tabela []-->
+    <insert id="salvarSolicitacaoPedidoMapper" parameterType="br.com.ithappenssh.model.SolicitacaoPedido">
+        INSERT INTO solicitacaoPedido (pedido, dT_Processamento, status, descricao)
+            VALUES(#{solicitacaoPedido.pedido}, #{solicitacaoPedido.dT_Processamento}, #{solicitacaoPedido.status}, #{solicitacaoPedido.descricao})
+    </insert>
+
+</mapper>

@@ -1,0 +1,42 @@
+spring:
+  output:
+    ansi:
+      enabled: always # Habilita OUTPUT de log colorido
+  cloud:
+    config:
+      enabled: false
+      uri: ${CONFIGSERVER_URI:http://0.0.0.0:8888}
+  zipkin:
+    base-url: ${ZIPKINSERVER_URI:http://0.0.0.0:9411}
+mybatis:
+  type-aliases-package: br.com.ithappenssh.model
+  type-handlers-package: br.com.ithappenssh.mapper.typehandler
+  mapper-locations: classpath*:**/mappers/*Mapper.xml
+logging:
+  path:
+    br.com.ithappenssh: INFO
+eureka:
+  client:
+    enabled: false
+    registry-fetch-interval-seconds: 30
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKASERVER_URI:http://0.0.0.0:8761/eureka/}
+  instance:
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 11
+management:
+  endpoint:
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="br.com.ithappenssh.mapper.ClienteMapper">
+
+    <select id="recuperarClienteMapper" parameterType="br.com.ithappenssh.model.Cliente"
+            resultType="br.com.ithappenssh.model.Cliente">
+        select * FROM CADASTRO..CD18_CLIENTE where CD18_ID = #{id}
+    </select>
+
+    <select id="recuperarLimiteBaseDoClienteMapper" resultType="java.math.BigDecimal">
+        select FN109_LIMITE_CREDITO from FINANCEIRO.DBO.FN109_LIMITE_CREDITO_CLIENTE where FN109_ID_CLIENTE = #{id}
+    </select>
+
+    <select id="recuperarLimiteSumarizadoClienteEAssociadosMapper" resultType="java.math.BigDecimal">
+        select FN109_LIMITE_CREDITO from financeiro..VW09_LIMITE_CREDITO_CLIENTE where ID_CLIENTE = #{id}
+    </select>
+
+    <select id="recuperarStatusSefazMapper" resultType="int">
+        select CD18_ID AS clienteId, CD18_CIC_CGC as cnpj, VD25_STATUS AS STATUS_SEFAZ   from CADASTRO..CD18_CLIENTE WITH (NOLOCK)
+        LEFT JOIN VENDAS.DBO.VD25_CONTRIBUINTE_SEFAZ (NOLOCK) ON (VD25_CNPJ = CONVERT(NUMERIC, CD18_CIC_CGC))
+        and CD18_ID_ESTADO = 10
+        and CD18_CONTRIBUINTE = 1
+        where CD18_ID = #{id}
+    </select>
+
+
+</mapper>

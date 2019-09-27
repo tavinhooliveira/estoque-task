@@ -1,0 +1,74 @@
+spring:
+  profiles:
+    active: deleteMe
+  main:
+    web-application-type: none
+app:
+  logging:
+    host: 192.168.6.182:5000
+---
+spring:
+  profiles: prod
+app:
+  datasource:
+    url: jdbc:h2:~/resources/:testdb
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+ithappens:
+  itjob:
+    data-source:
+      driver-class-name: org.postgresql.Driver
+      username: root
+      password: NjA5M2JiMDQw
+      url: jdbc:postgresql://192.168.6.97:30432/dataflow
+---
+# Coloque aqui suas configurações de Desenvolvimento
+spring:
+  profiles: dev
+app:
+  datasource:
+    url: jdbc:h2:~/resources/:testdb
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+ithappens:
+  itjob:
+    data-source:
+      driver-class-name: org.h2.Driver
+      username: sa
+      password: password
+      url: jdbc:h2:~/resources//devtask
+---
+# Coloque aqui suas configurações de Homologação
+spring:
+  profiles: homo
+app:
+  datasource:
+    url: jdbc:h2:~/resources/:testdb
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+ithappens:
+  itjob:
+    data-source:
+      driver-class-name: org.h2.Driver
+      username: sa
+      password: password
+      url: jdbc:h2:~/resources//homotask
+---
+spring:
+  profiles: deleteMe
+app:
+  datasource:
+    url: jdbc:h2:~/resources/:testdb
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+ithappens:
+  itjob:
+    data-source:
+      driver-class-name: org.h2.Driver
+      username: sa
+      password: password
+      url: jdbc:h2:~/resources//dataflow
