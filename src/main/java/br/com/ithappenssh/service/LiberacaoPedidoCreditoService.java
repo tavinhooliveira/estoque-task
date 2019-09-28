@@ -8,6 +8,7 @@ import br.com.ithappenssh.model.SolicitacaoPedido;
 import br.com.ithappenssh.model.dto.PedidoSolicitadoDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -27,7 +28,7 @@ public class LiberacaoPedidoCreditoService {
   private static final String UM = "1";
   private static final String USER_SISTEMA = "256";
 
-  private void solicitarPedido() {
+  public void solicitarPedido() {
     List<PedidoSolicitadoDTO> pedidos = pedidoSolicitadoMapper.listarPedidosSolicitados();
     if (log.isInfoEnabled()) {
       log.info("Recuperando os pedidos para o processamento | TOTAL: " + pedidos.size());
@@ -54,7 +55,7 @@ public class LiberacaoPedidoCreditoService {
   }
 
   private boolean pedidoJaProcessado(Long id) {
-    String PROCESSADO_ERRO = "PE";
+    String PROCESSADO_ERRO = "E";
     SolicitacaoPedido pedido = pedidoSolicitadoMapper.buscarPedidosProcessadosMapper(id);
     if (pedido != null) {
       log.info("O pedido já está registrado |TRASACAO:" + pedido.getId() + "|PEDIDO:" + pedido.getPedido() +
