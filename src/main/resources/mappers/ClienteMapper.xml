@@ -2,26 +2,83 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="br.com.ithappenssh.mapper.ClienteMapper">
 
-    <select id="recuperarClienteMapper" parameterType="br.com.ithappenssh.model.Cliente"
-            resultType="br.com.ithappenssh.model.Cliente">
+    <select id="recuperarClienteMapper" parameterType="br.com.ithappenssh.model.Cliente" resultType="br.com.ithappenssh.model.Cliente">
         select * FROM CADASTRO..CD18_CLIENTE where CD18_ID = #{id}
-    </select>
-
-    <select id="recuperarLimiteBaseDoClienteMapper" resultType="java.math.BigDecimal">
-        select FN109_LIMITE_CREDITO from FINANCEIRO.DBO.FN109_LIMITE_CREDITO_CLIENTE where FN109_ID_CLIENTE = #{id}
     </select>
 
     <select id="recuperarLimiteSumarizadoClienteEAssociadosMapper" resultType="java.math.BigDecimal">
         select FN109_LIMITE_CREDITO from financeiro..VW09_LIMITE_CREDITO_CLIENTE where ID_CLIENTE = #{id}
     </select>
 
-    <select id="recuperarStatusSefazMapper" resultType="int">
-        select CD18_ID AS clienteId, CD18_CIC_CGC as cnpj, VD25_STATUS AS STATUS_SEFAZ   from CADASTRO..CD18_CLIENTE WITH (NOLOCK)
-        LEFT JOIN VENDAS.DBO.VD25_CONTRIBUINTE_SEFAZ (NOLOCK) ON (VD25_CNPJ = CONVERT(NUMERIC, CD18_CIC_CGC))
-        and CD18_ID_ESTADO = 10
-        and CD18_CONTRIBUINTE = 1
-        where CD18_ID = #{id}
+    <select id="recuperarLimiteResanteClienteEAssociadosMapper" resultType="java.math.BigDecimal">
+       select ...
     </select>
 
+    <select id="recuperarStatusSefazMapper" resultType="int">
+        select CD18_ID AS clienteId, CD18_CIC_CGC as cnpj, VD25_STATUS AS STATUS_SEFAZ
+            from CADASTRO..CD18_CLIENTE WITH (NOLOCK)
+            LEFT JOIN VENDAS.DBO.VD25_CONTRIBUINTE_SEFAZ (NOLOCK) ON (VD25_CNPJ = CONVERT(NUMERIC, CD18_CIC_CGC))
+            and CD18_ID_ESTADO = 10
+            and CD18_CONTRIBUINTE = 1
+            where CD18_ID = #{id}
+    </select>
+
+    <select id="recuperarChequeReapresentadoMapper" resultType="int">
+        SELECT COUNT(FN01_SEQU)
+            FROM FINANCEIRO.DBO.FN01_LANCAMENTO_CONTAS_RECEBER WITH (NOLOCK)
+            INNER JOIN CADASTRO..CD23_FILIAL WITH (NOLOCK) ON CD23_ID = FN01_ID_FILIAL
+            INNER JOIN CADASTRO..CD16_EMPRESA WITH (NOLOCK) ON CD23_ID_EMPR = CD16_ID
+            WHERE FN01_ID_CLIENTE IN (SELECT PAI.CD109_ID_CLIENTE_FILHO
+                  FROM CADASTRO..CD109_CLIENTE_RELACIONADO AS FILHO WITH (NOLOCK)
+                           INNER JOIN CADASTRO..CD109_CLIENTE_RELACIONADO AS PAI WITH (NOLOCK)
+                                      ON PAI.CD109_ID_CLIENTE = FILHO.CD109_ID_CLIENTE AND PAI.CD109_ATIVO = 1
+                  WHERE FILHO.CD109_ID_CLIENTE_FILHO = 47157
+                    AND FILHO.CD109_ATIVO = 1
+                  UNION
+                  SELECT 47157)
+            AND FN01_ID_TIPO_COBRANCA = 199
+            AND FN01_STATUS = 0
+            AND FN01_ID_FILIAL = 81
+    </select>
+
+    <select id="recuperarChequeDevolvidoMapper" resultType="double">
+        SELECT COUNT(FN01_SEQU)
+            FROM FINANCEIRO.DBO.FN01_LANCAMENTO_CONTAS_RECEBER WITH (NOLOCK)
+                     INNER JOIN CADASTRO..CD23_FILIAL WITH (NOLOCK) ON CD23_ID = FN01_ID_FILIAL
+                     INNER JOIN CADASTRO..CD16_EMPRESA WITH (NOLOCK) ON CD23_ID_EMPR = CD16_ID
+            WHERE FN01_ID_CLIENTE IN (SELECT PAI.CD109_ID_CLIENTE_FILHO
+                                      FROM CADASTRO..CD109_CLIENTE_RELACIONADO AS FILHO WITH (NOLOCK)
+                                               INNER JOIN CADASTRO..CD109_CLIENTE_RELACIONADO AS PAI WITH (NOLOCK)
+                                                          ON PAI.CD109_ID_CLIENTE = FILHO.CD109_ID_CLIENTE AND PAI.CD109_ATIVO = 1
+                                      WHERE FILHO.CD109_ID_CLIENTE_FILHO = #{id}
+                                        AND FILHO.CD109_ATIVO = 1
+                                      UNION
+                                      SELECT #{id})
+              AND FN01_ID_TIPO_COBRANCA = 4
+              AND FN01_STATUS = 0
+              AND FN01_ID_FILIAL = 81
+    </select>
+
+    <select id="recuperarTitulosVencidosMapper" resultType="double">
+        SELECT SUM(FN01_VALOR_DEVEDOR)
+            FROM FINANCEIRO.DBO.FN01_LANCAMENTO_CONTAS_RECEBER WITH (NOLOCK)
+            INNER JOIN CADASTRO..CD23_FILIAL A WITH (NOLOCK) ON A.CD23_ID = FN01_ID_FILIAL
+            INNER JOIN CADASTRO..CD16_EMPRESA B WITH (NOLOCK) ON B.CD16_ID = A.CD23_ID_EMPR
+            INNER JOIN CADASTRO..CD16_EMPRESA C WITH (NOLOCK)
+            ON C.CD16_ID_GRUPO_FINANCEIRO = B.CD16_ID_GRUPO_FINANCEIRO
+            INNER JOIN CADASTRO..CD23_FILIAL D WITH (NOLOCK) ON D.CD23_ID_EMPR = C.CD16_ID
+            WHERE FN01_ID_CLIENTE IN (SELECT PAI.CD109_ID_CLIENTE_FILHO
+            FROM CADASTRO..CD109_CLIENTE_RELACIONADO AS FILHO WITH (NOLOCK)
+            INNER JOIN CADASTRO..CD109_CLIENTE_RELACIONADO AS PAI WITH (NOLOCK)
+            ON PAI.CD109_ID_CLIENTE = FILHO.CD109_ID_CLIENTE AND PAI.CD109_ATIVO = 1
+            WHERE FILHO.CD109_ID_CLIENTE_FILHO = #{id}
+            AND FILHO.CD109_ATIVO = 1
+            UNION
+            SELECT #{id})
+            AND FN01_ID_FILIAL = 81
+            AND FN01_DT_VENC_ATUAL BETWEEN '2000-01-01' AND getdate() - 5
+            AND FN01_STATUS <> 99
+            AND FN01_VALOR_DEVEDOR > 0
+    </select>
 
 </mapper>

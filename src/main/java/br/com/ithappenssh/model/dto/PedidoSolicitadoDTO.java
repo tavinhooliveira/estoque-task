@@ -5,6 +5,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * @author luis.o.oliveira
+ * @implNote Model DTO, representação da query inicial de pedidos a ser processados!
+ */
 @Data
 public class PedidoSolicitadoDTO {
   private Long pedidoId;

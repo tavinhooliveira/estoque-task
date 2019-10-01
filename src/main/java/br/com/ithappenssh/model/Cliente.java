@@ -2,10 +2,17 @@ package br.com.ithappenssh.model;
 
 import lombok.Data;
 
+import javax.persistence.Table;
 import java.util.Date;
 
+/**
+ * @author luis.o.oliveira
+ * @implNote Model Persistent, representação da tabela {CD18_CLIENTE} da base de dados!
+ */
 @Data
+@Table(name = "CD18_CLIENTE")
 public class Cliente {
+
   private Long CD18_ID;
   private Long CD18_ID_CIDADE;
   private Long CD18_ID_ESTADO;

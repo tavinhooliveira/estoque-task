@@ -1,52 +1,95 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="br.com.ithappenssh.mapper.PedidoSolicitadoMapper">
-
-    <select id="listarPedidosSolicitados" parameterType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO"
-            resultType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO">
+    <!--Buscar pedidos a ser processados -->
+    <select id="listarPedidosSolicitados" parameterType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO" resultType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO">
         SELECT ES12_ID AS pedidoId, CD62_ID AS tipoMovimento, ES24_ID tipoPedido, ES12_ID_STATUS AS statusPedido,
-        ES12_DT_DIGITACAO as dataDigitacao,
-        ES12_VALOR_TOTAL as valorPedido, ES12_ID_CLIENTE as cliente, CD17_ID as formaPagamento
-        FROM ESTOQUE.DBO.ES12_PEDIDO WITH (NOLOCK)
-        INNER JOIN CADASTRO.DBO.CD18_CLIENTE WITH (NOLOCK) ON (ES12_ID_CLIENTE = CD18_ID)
-        INNER JOIN CADASTRO.DBO.CD62_ESTOQUE_MOVIMENTO (NOLOCK) ON (CD62_ID = ES12_TIPO_MOVIMENTO)
-        INNER JOIN ESTOQUE.DBO.ES24_TIPO_PEDIDO WITH (NOLOCK) ON (CD62_ID_TIPO_PEDIDO = ES24_ID)
-        LEFT JOIN CADASTRO.DBO.CD17_AGENTE_COBRADOR (NOLOCK) ON (CD17_ID = ES12_ID_AGENTE_COBRADOR)
-        LEFT JOIN VENDAS.DBO.VD25_CONTRIBUINTE_SEFAZ (NOLOCK) ON (VD25_CNPJ = CONVERT(NUMERIC, CD18_CIC_CGC))
-        LEFT JOIN ESTOQUE.DBO.ES19_LIBERACAO_PEDIDO (NOLOCK) ON (ES12_ID = ES19_ID_PEDIDO)
-        WHERE ES12_FILIAL = 81
-        AND ES12_ID_STATUS = 2
-        AND CD62_TIPO = 0
-        AND ES24_ID = 1
-        AND ES12_TIPO_MOVIMENTO = (82)
-        AND NOT EXISTS(SELECT
-        TOP 1
-        1
-        FROM LOG.DBO.LG04_SERVICO_AGENDA WITH (NOLOCK)
-        LEFT JOIN FINANCEIRO.DBO.FN00_PRE_LANCAMENTO_FINANCEIRO WITH (NOLOCK)
-        ON FN00_ID_PEDIDO = LG04_ID_ORIGEM AND LG04_ID_SERVICO = 90
-        LEFT JOIN FINANCEIRO.DBO.FN01_LANCAMENTO_CONTAS_RECEBER WITH (NOLOCK)
-        ON FN01_SEQU = FN00_SEQU_TITULO
-        WHERE LG04_ID_ORIGEM = ES12_ID
-        AND ((FN00_SEQU IS NULL OR FN01_SEQU IS NULL) OR
-        (FN01_ID_AGENTE_COBRADOR = 612 AND FN01_ID_TIPO_COBRANCA = 1997 AND FN01_STATUS
-        <>
-        99 AND
-        FN01_VALOR_DEVEDOR > 0)))
-        ORDER BY ES12_DT_DIGITACAO
+            ES12_DT_DIGITACAO as dataDigitacao, ES12_VALOR_TOTAL as valorPedido, ES12_ID_CLIENTE as cliente, CD17_ID as formaPagamento
+                FROM ESTOQUE.DBO.ES12_PEDIDO WITH (NOLOCK)
+                    INNER JOIN CADASTRO.DBO.CD18_CLIENTE WITH (NOLOCK) ON       (ES12_ID_CLIENTE = CD18_ID)
+                    INNER JOIN CADASTRO.DBO.CD62_ESTOQUE_MOVIMENTO (NOLOCK) ON  (CD62_ID = ES12_TIPO_MOVIMENTO)
+                    INNER JOIN ESTOQUE.DBO.ES24_TIPO_PEDIDO WITH (NOLOCK) ON    (CD62_ID_TIPO_PEDIDO = ES24_ID)
+                    LEFT JOIN CADASTRO.DBO.CD17_AGENTE_COBRADOR (NOLOCK) ON     (CD17_ID = ES12_ID_AGENTE_COBRADOR)
+                    LEFT JOIN VENDAS.DBO.VD25_CONTRIBUINTE_SEFAZ (NOLOCK) ON    (VD25_CNPJ = CONVERT(NUMERIC, CD18_CIC_CGC))
+                    LEFT JOIN ESTOQUE.DBO.ES19_LIBERACAO_PEDIDO (NOLOCK) ON     (ES12_ID = ES19_ID_PEDIDO)
+                    WHERE ES12_FILIAL = 81
+                    AND ES12_ID_STATUS = 2
+                    AND CD62_TIPO = 0
+                    AND ES24_ID = 1
+                    AND ES12_TIPO_MOVIMENTO = (82)
+                    AND NOT EXISTS(SELECT
+                    TOP 1
+                    1
+                    FROM LOG.DBO.LG04_SERVICO_AGENDA WITH (NOLOCK)
+                        LEFT JOIN FINANCEIRO.DBO.FN00_PRE_LANCAMENTO_FINANCEIRO WITH (NOLOCK)
+                        ON FN00_ID_PEDIDO = LG04_ID_ORIGEM AND LG04_ID_SERVICO = 90
+                        LEFT JOIN FINANCEIRO.DBO.FN01_LANCAMENTO_CONTAS_RECEBER WITH (NOLOCK)
+                        ON FN01_SEQU = FN00_SEQU_TITULO
+                        WHERE LG04_ID_ORIGEM = ES12_ID
+                        AND ((FN00_SEQU IS NULL OR FN01_SEQU IS NULL) OR
+                        (FN01_ID_AGENTE_COBRADOR = 612 AND FN01_ID_TIPO_COBRANCA = 1997 AND FN01_STATUS <> 99 AND
+                        FN01_VALOR_DEVEDOR > 0)))
+                        ORDER BY ES12_DT_DIGITACAO
     </select>
 
+    <!--Buscar Lista de pedidos a ser processados por cliente -->
+    <select id="listarPedidosSolicitadosPorCliente" parameterType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO" resultType="br.com.ithappenssh.model.dto.PedidoSolicitadoDTO">
+        SELECT ES12_ID AS pedidoId, CD62_ID AS tipoMovimento, ES24_ID tipoPedido, ES12_ID_STATUS AS statusPedido,
+            ES12_DT_DIGITACAO as dataDigitacao,
+            ES12_VALOR_TOTAL as valorPedido, ES12_ID_CLIENTE as cliente, CD17_ID as formaPagamento
+                FROM ESTOQUE.DBO.ES12_PEDIDO WITH (NOLOCK)
+                    INNER JOIN CADASTRO.DBO.CD18_CLIENTE WITH (NOLOCK) ON (ES12_ID_CLIENTE = CD18_ID)
+                    INNER JOIN CADASTRO.DBO.CD62_ESTOQUE_MOVIMENTO (NOLOCK) ON (CD62_ID = ES12_TIPO_MOVIMENTO)
+                    INNER JOIN ESTOQUE.DBO.ES24_TIPO_PEDIDO WITH (NOLOCK) ON (CD62_ID_TIPO_PEDIDO = ES24_ID)
+                    LEFT JOIN CADASTRO.DBO.CD17_AGENTE_COBRADOR (NOLOCK) ON (CD17_ID = ES12_ID_AGENTE_COBRADOR)
+                    LEFT JOIN VENDAS.DBO.VD25_CONTRIBUINTE_SEFAZ (NOLOCK) ON (VD25_CNPJ = CONVERT(NUMERIC, CD18_CIC_CGC))
+                    LEFT JOIN ESTOQUE.DBO.ES19_LIBERACAO_PEDIDO (NOLOCK) ON (ES12_ID = ES19_ID_PEDIDO)
+                    WHERE ES12_FILIAL = 81
+                    AND ES12_ID_STATUS = 2
+                    AND CD62_TIPO = 0
+                    AND ES24_ID = 1
+                    AND ES12_TIPO_MOVIMENTO = (82)
+                    AND ES12_ID_CLIENTE = #{id}
+                    AND NOT EXISTS(SELECT
+                    TOP 1
+                    1
+                    FROM LOG.DBO.LG04_SERVICO_AGENDA WITH (NOLOCK)
+                        LEFT JOIN FINANCEIRO.DBO.FN00_PRE_LANCAMENTO_FINANCEIRO WITH (NOLOCK)
+                        ON FN00_ID_PEDIDO = LG04_ID_ORIGEM AND LG04_ID_SERVICO = 90
+                        LEFT JOIN FINANCEIRO.DBO.FN01_LANCAMENTO_CONTAS_RECEBER WITH (NOLOCK)
+                        ON FN01_SEQU = FN00_SEQU_TITULO
+                        WHERE LG04_ID_ORIGEM = ES12_ID
+                        AND ((FN00_SEQU IS NULL OR FN01_SEQU IS NULL) OR
+                        (FN01_ID_AGENTE_COBRADOR = 612 AND FN01_ID_TIPO_COBRANCA = 1997 AND FN01_STATUS
+                        <>
+                        99 AND
+                        FN01_VALOR_DEVEDOR > 0)))
+                        ORDER BY ES12_DT_DIGITACAO
+    </select>
+
+    <!--Buscar lista de pedidos bloqueados pelo JOB por cliente | tabela [ES19B_SOLICITACAO_PEDIDO] -->
+    <select id="listaPedidosSolicitadosBloqueadosPorCliente" parameterType="br.com.ithappenssh.model.SolicitacaoPedido" resultType="br.com.ithappenssh.model.SolicitacaoPedido">
+        SELECT * from ES19B_SOLICITACAO_PEDIDO
+        WHERE ES19B_SOLICITACAO_PEDIDO.ES19B_ID_CLIENTE = #{id}
+        AND ES19B_SOLICITACAO_PEDIDO.ES19B_STATUS = 'E'
+    </select>
+
+    <!--Buscar lista pedidos processados pelo JOB | tabela [ES19B_SOLICITACAO_PEDIDO] -->
     <select id="buscarPedidosProcessadosMapper" resultType="br.com.ithappenssh.model.SolicitacaoPedido">
-        SELECT * from solicitacaopedido WHERE solicitacaopedido.pedido = #{id}
+        SELECT * from ES19B_SOLICITACAO_PEDIDO WHERE ES19B_SOLICITACAO_PEDIDO.ES19B_ID_PEDIDO = #{id}
     </select>
 
     <!--Salvar Pedido na tabela de liberação | tabela [ES19_LIBERACAO_PEDIDO]-->
-    <insert id="salvarLiberacaoPedidoMapper"></insert>
+    <insert id="salvarLiberacaoPedidoMapper" parameterType="br.com.ithappenssh.model.LiberacaoPedido">
+        INSERT INTO ES19_LIBERACAO_PEDIDO (ES19_ID, ES19_ID_USUARIO, ES19_ID_PEDIDO, ES19_TITULO_VENCIDO, S19_CHEQUE_DEVOLVIDO, ES19_CHEQUE_REAPRESENTADO, ES19_EXCEDEU_LIMITE, ES19_DT, ES19_LIBERACAO_AUTOMATICA, ES19_RESTRICAO_SEFAZ)
+            VALUES(#{ES19_LIBERACAO_PEDIDO.ES19_ID}, #{ES19_LIBERACAO_PEDIDO.ES19_ID_USUARIO}, #{ES19_LIBERACAO_PEDIDO.ES19_ID_PEDIDO}, #{ES19_LIBERACAO_PEDIDO.ES19_TITULO_VENCIDO}, #{ES19_LIBERACAO_PEDIDO.S19_CHEQUE_DEVOLVIDO},
+             #{ES19_LIBERACAO_PEDIDO.ES19_CHEQUE_REAPRESENTADO}, #{ES19_LIBERACAO_PEDIDO.ES19_EXCEDEU_LIMITE}, #{ES19_LIBERACAO_PEDIDO.ES19_DT}, #{ES19_LIBERACAO_PEDIDO.ES19_LIBERACAO_AUTOMATICA}, #{ES19_LIBERACAO_PEDIDO.ES19_RESTRICAO_SEFAZ})
+    </insert>
 
-    <!--Salvar Pedido na tabela de log do JOB | tabela []-->
+    <!--Salvar Pedido na tabela de log do JOB | tabela [ES19B_SOLICITACAO_PEDIDO]-->
     <insert id="salvarSolicitacaoPedidoMapper" parameterType="br.com.ithappenssh.model.SolicitacaoPedido">
-        INSERT INTO solicitacaoPedido (pedido, dT_Processamento, status, descricao)
-            VALUES(#{solicitacaoPedido.pedido}, #{solicitacaoPedido.dT_Processamento}, #{solicitacaoPedido.status}, #{solicitacaoPedido.descricao})
+        INSERT INTO ES19B_SOLICITACAO_PEDIDO (ES19B_ID_PEDIDO, ES19B_ID_CLIENTE, ES19B_DT_PROCESSAMENTO, ES19B_STATUS, ES19B_DESCRICAO)
+            VALUES(#{ES19B_SOLICITACAO_PEDIDO.ES19B_ID_PEDIDO}, #{ES19B_ID_CLIENTE.ES19B_ID_CLIENTE}, #{ES19B_SOLICITACAO_PEDIDO.ES19B_DT_PROCESSAMENTO}, #{ES19B_SOLICITACAO_PEDIDO.ES19B_STATUS}, #{ES19B_SOLICITACAO_PEDIDO.ES19B_DESCRICAO})
     </insert>
 
 </mapper>

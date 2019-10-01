@@ -3,7 +3,7 @@ package br.com.ithappenssh.tasks;
 import br.com.ithappens.lib.task.annotation.Tarefa;
 import br.com.ithappens.lib.task.model.Argumentos;
 import br.com.ithappens.lib.task.service.task.IEngTask;
-import br.com.ithappenssh.service.LiberacaoPedidoCreditoService;
+import br.com.ithappenssh.service.impl.LiberacaoPedidoCreditoServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import org.springframework.cloud.task.repository.TaskExecution;
 public class LiberacaoPedidoCreditoTask implements IEngTask {
 
   @Autowired
-  private LiberacaoPedidoCreditoService liberacaoPedidoCreditoService;
+  private LiberacaoPedidoCreditoServiceImpl liberacaoPedidoCreditoServiceImpl;
 
   @Override
   public void executar(Argumentos args) {
@@ -23,7 +23,7 @@ public class LiberacaoPedidoCreditoTask implements IEngTask {
       if (log.isInfoEnabled()) {
         log.info("Iniciando processo de liberação de pedido...");
       }
-      liberacaoPedidoCreditoService.solicitarPedido();
+      liberacaoPedidoCreditoServiceImpl.solicitarPedido();
     } catch (Exception e) {
       if (log.isErrorEnabled()) {
         log.error(e.getMessage());

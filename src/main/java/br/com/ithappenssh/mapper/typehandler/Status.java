@@ -1,8 +1,12 @@
 package br.com.ithappenssh.mapper.typehandler;
 
+/**
+ * @author luis.o.oliveira
+ * @implNote Enum
+ */
 public enum Status {
-  S("PROCESSADO_SUCESSO"),
-  E("PROCESSADO_ERRO");
+  SUCCESS("1"),
+  ERROR("0");
   private String descricao;
 
   Status(String descricao) {
